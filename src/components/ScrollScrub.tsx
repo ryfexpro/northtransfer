@@ -4,14 +4,10 @@ import React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 
-
-
 export interface ScrollScrubScene {
   id: string;
   label: string;
-  /** Exact first frame of the deployed desktop clip. */
   poster: string;
-  /** Exact first frame of mobileClip; provide whenever mobileClip is set. */
   mobilePoster?: string;
   clip: string;
   mobileClip?: string;
@@ -21,18 +17,14 @@ export interface ScrollScrubScene {
   tags?: string[];
   actions?: ReactNode;
   align?: "left" | "right";
-  /** Viewport-heights assigned to this scene. More distance means slower scrub. */
   scroll?: number;
-  /** 0..0.6. Slow the middle of the clip without changing either seam frame. */
   linger?: number;
   objectPosition?: string;
   mobileObjectPosition?: string;
 }
 
 export interface ScrollScrubConnector {
-  /** Exact first frame of this connector clip; never substitute a scene still. */
   poster: string;
-  /** Exact first frame of mobileClip; provide whenever mobileClip is set. */
   mobilePoster?: string;
   clip: string;
   mobileClip?: string;
@@ -48,7 +40,6 @@ export interface ScrollScrubTheme {
 
 export interface ScrollScrubProps {
   scenes: ScrollScrubScene[];
-  /** Leave empty for continuous-forward architecture A. */
   connectors?: (ScrollScrubConnector | null)[];
   theme: ScrollScrubTheme;
   className?: string;
@@ -183,18 +174,13 @@ export function ScrollScrub({
     [connectors, scenes]
   );
 
-  // Keep the latest callback reachable from the scroll loop without making it a
-  // dependency of the controller effect. Synced in an effect, never during
-  // render — a render-phase ref write breaks under React Compiler.
   useEffect(() => {
     onActiveRef.current = onActiveSectionChange;
   }, [onActiveSectionChange]);
 
   useEffect(() => {
     const root = rootRef.current;
-    if (!root || segments.length === 0) {
-      return;
-    }
+    if (!root || segments.length === 0) return;
 
     const layerNodes = [
       ...root.querySelectorAll<HTMLElement>("[data-scroll-scrub-layer]"),
@@ -202,23 +188,17 @@ export function ScrollScrub({
     const bandNodes = [
       ...root.querySelectorAll<HTMLElement>("[data-scroll-scrub-band]"),
     ];
-    if (
-      layerNodes.length !== segments.length ||
-      bandNodes.length !== segments.length
-    ) {
+    if (layerNodes.length !== segments.length || bandNodes.length !== segments.length) {
       throw new Error("ScrollScrub segment markup is out of sync");
     }
 
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-    const coarsePointer = window.matchMedia(
-      "(hover: none) and (pointer: coarse)"
-    ).matches;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const coarsePointer = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
     const smallViewport = window.matchMedia("(max-width: 860px)");
     const isMobile = () => coarsePointer || smallViewport.matches;
     const sourceFor = (segment: RuntimeSegment) =>
       isMobile() && segment.mobileClip ? segment.mobileClip : segment.clip;
+
     const runtime: RuntimeSegment[] = segments.map((segment, index) => ({
       ...segment,
       band: bandNodes[index],
@@ -246,9 +226,7 @@ export function ScrollScrub({
     const unloadClip = (segment: RuntimeSegment) => {
       segment.abort?.abort();
       segment.video?.remove();
-      if (segment.objectUrl) {
-        URL.revokeObjectURL(segment.objectUrl);
-      }
+      if (segment.objectUrl) URL.revokeObjectURL(segment.objectUrl);
       delete segment.abort;
       delete segment.video;
       delete segment.objectUrl;
@@ -268,10 +246,7 @@ export function ScrollScrub({
       layoutWidth = window.innerWidth;
 
       for (const segment of runtime) {
-        if (
-          segment.loadedSource &&
-          segment.loadedSource !== sourceFor(segment)
-        ) {
+        if (segment.loadedSource && segment.loadedSource !== sourceFor(segment)) {
           unloadClip(segment);
         }
         const rect = segment.band.getBoundingClientRect();
@@ -283,15 +258,11 @@ export function ScrollScrub({
     };
 
     const primeVideo = async (video?: HTMLVideoElement) => {
-      if (!video || !isMobile()) {
-        return;
-      }
+      if (!video || !isMobile()) return;
       try {
         await video.play();
         video.pause();
-      } catch {
-        // Keep the poster; a later user gesture/seek can retry naturally.
-      }
+      } catch {}
     };
 
     const loadClip = async (segment: RuntimeSegment) => {
@@ -303,9 +274,7 @@ export function ScrollScrub({
         segment.ready ||
         segment.failed ||
         !source
-      ) {
-        return;
-      }
+      ) return;
 
       segment.loading = true;
       segment.loadedSource = source;
@@ -313,20 +282,10 @@ export function ScrollScrub({
       const request = segment.abort;
 
       try {
-        const response = await fetch(source, {
-          signal: request.signal,
-        });
-        if (!response.ok) {
-          throw new Error(`Clip failed: ${response.status}`);
-        }
+        const response = await fetch(source, { signal: request.signal });
+        if (!response.ok) throw new Error(`Clip failed: ${response.status}`);
         const blob = await response.blob();
-        if (
-          destroyed ||
-          request.signal.aborted ||
-          segment.loadedSource !== source
-        ) {
-          return;
-        }
+        if (destroyed || request.signal.aborted || segment.loadedSource !== source) return;
 
         const objectUrl = URL.createObjectURL(blob);
         const video = document.createElement("video");
@@ -338,58 +297,37 @@ export function ScrollScrub({
         video.setAttribute("playsinline", "");
         video.src = objectUrl;
 
-        video.addEventListener(
-          "loadedmetadata",
-          () => {
-            if (segment.video !== video || segment.loadedSource !== source) {
-              return;
-            }
-            segment.ready = true;
-            segment.loading = false;
-            dirty = true;
-          },
-          { once: true }
-        );
-        video.addEventListener(
-          "loadeddata",
-          () => {
-            if (
-              userReady &&
-              segment.video === video &&
-              segment.loadedSource === source
-            ) {
-              void primeVideo(video);
-            }
-          },
-          { once: true }
-        );
-        video.addEventListener(
-          "error",
-          () => {
-            if (segment.video !== video) {
-              return;
-            }
-            video.remove();
-            URL.revokeObjectURL(objectUrl);
-            delete segment.video;
-            delete segment.objectUrl;
-            segment.failed = true;
-            segment.loading = false;
-            segment.ready = false;
-            delete segment.layer.dataset.videoPainted;
-            segment.layer.dataset.videoFailed = "true";
-          },
-          { once: true }
-        );
-        video.addEventListener(
-          "seeked",
-          () => {
-            if (segment.video === video && segment.loadedSource === source) {
-              segment.layer.dataset.videoPainted = "true";
-            }
-          },
-          { once: true }
-        );
+        video.addEventListener("loadedmetadata", () => {
+          if (segment.video !== video || segment.loadedSource !== source) return;
+          segment.ready = true;
+          segment.loading = false;
+          dirty = true;
+        }, { once: true });
+
+        video.addEventListener("loadeddata", () => {
+          if (userReady && segment.video === video && segment.loadedSource === source) {
+            void primeVideo(video);
+          }
+        }, { once: true });
+
+        video.addEventListener("error", () => {
+          if (segment.video !== video) return;
+          video.remove();
+          URL.revokeObjectURL(objectUrl);
+          delete segment.video;
+          delete segment.objectUrl;
+          segment.failed = true;
+          segment.loading = false;
+          segment.ready = false;
+          delete segment.layer.dataset.videoPainted;
+          segment.layer.dataset.videoFailed = "true";
+        }, { once: true });
+
+        video.addEventListener("seeked", () => {
+          if (segment.video === video && segment.loadedSource === source) {
+            segment.layer.dataset.videoPainted = "true";
+          }
+        }, { once: true });
 
         segment.layer.append(video);
         segment.objectUrl = objectUrl;
@@ -399,9 +337,7 @@ export function ScrollScrub({
           request.signal.aborted ||
           (error instanceof Error && error.name === "AbortError") ||
           segment.loadedSource !== source
-        ) {
-          return;
-        }
+        ) return;
         segment.layer.dataset.videoFailed = "true";
         segment.failed = true;
         segment.loading = false;
@@ -415,27 +351,24 @@ export function ScrollScrub({
       let currentIndex = 0;
 
       for (const [index, segment] of runtime.entries()) {
-        if (y >= segment.start) {
-          currentIndex = index;
-        }
+        if (y >= segment.start) currentIndex = index;
 
         const length = Math.max(segment.end - segment.start, 1);
-        const local = clamp((y - segment.start) / length);
+
+        // Finish the clip before the hero section ends. This keeps the hero at
+        // 100dvh while allowing the final video frame to be visible briefly.
+        const local = clamp((y - segment.start) / (length * 0.82));
+
         segment.target = segment.linger
           ? lingerEase(local, segment.linger)
           : local;
 
         let outside = 0;
-        if (y < segment.start) {
-          outside = segment.start - y;
-        }
-        if (y > segment.end) {
-          outside = y - segment.end;
-        }
+        if (y < segment.start) outside = segment.start - y;
+        if (y > segment.end) outside = y - segment.end;
+
         let opacity = smoothstep(1 - outside / Math.max(crossfade, 1));
-        if (reduceMotion) {
-          opacity = outside === 0 ? 1 : 0;
-        }
+        if (reduceMotion) opacity = outside === 0 ? 1 : 0;
 
         segment.visible = opacity > 0.001;
         segment.layer.style.opacity = String(opacity);
@@ -470,15 +403,8 @@ export function ScrollScrub({
     const updateVideos = () => {
       for (const segment of runtime) {
         const { video } = segment;
-        if (!video || !segment.ready || video.seeking) {
-          continue;
-        }
-        if (
-          !segment.visible &&
-          Math.abs(segment.current - segment.target) < 0.002
-        ) {
-          continue;
-        }
+        if (!video || !segment.ready || video.seeking) continue;
+        if (!segment.visible && Math.abs(segment.current - segment.target) < 0.002) continue;
 
         segment.current += (segment.target - segment.current) * 0.2;
         const targetTime =
@@ -487,17 +413,13 @@ export function ScrollScrub({
         if (Math.abs(video.currentTime - targetTime) > epsilon) {
           try {
             video.currentTime = targetTime;
-          } catch {
-            // Keep the last painted frame while the browser catches up.
-          }
+          } catch {}
         }
       }
     };
 
     const tick = () => {
-      if (destroyed) {
-        return;
-      }
+      if (destroyed) return;
       if (dirty) {
         dirty = false;
         readScroll();
@@ -506,23 +428,15 @@ export function ScrollScrub({
       frame = window.requestAnimationFrame(tick);
     };
 
-    const onScroll = () => {
-      dirty = true;
-    };
+    const onScroll = () => { dirty = true; };
     const onResize = () => {
-      if (coarsePointer && window.innerWidth === layoutWidth) {
-        return;
-      }
+      if (coarsePointer && window.innerWidth === layoutWidth) return;
       layout();
     };
     const onFirstGesture = () => {
-      if (userReady) {
-        return;
-      }
+      if (userReady) return;
       userReady = true;
-      for (const segment of runtime) {
-        void primeVideo(segment.video);
-      }
+      for (const segment of runtime) void primeVideo(segment.video);
     };
 
     controllerRef.current = {
@@ -531,9 +445,7 @@ export function ScrollScrub({
           (candidate) =>
             candidate.kind === "scene" && candidate.sectionIndex === index
         );
-        if (!segment) {
-          return;
-        }
+        if (!segment) return;
         const top =
           rootTop + segment.start + 0.15 * (segment.end - segment.start);
         window.scrollTo({
@@ -546,14 +458,8 @@ export function ScrollScrub({
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", layout);
-    window.addEventListener("pointerdown", onFirstGesture, {
-      once: true,
-      passive: true,
-    });
-    window.addEventListener("touchstart", onFirstGesture, {
-      once: true,
-      passive: true,
-    });
+    window.addEventListener("pointerdown", onFirstGesture, { once: true, passive: true });
+    window.addEventListener("touchstart", onFirstGesture, { once: true, passive: true });
 
     layout();
     frame = window.requestAnimationFrame(tick);
@@ -578,9 +484,7 @@ export function ScrollScrub({
     };
   }, [segments]);
 
-  if (scenes.length === 0) {
-    return null;
-  }
+  if (scenes.length === 0) return null;
 
   const themeStyle: ThemeStyle = {
     "--ss-accent": theme.accent,
@@ -669,9 +573,7 @@ export function ScrollScrub({
           }
 
           const { scene } = segment;
-          if (!scene) {
-            return null;
-          }
+          if (!scene) return null;
           const Heading = segment.sectionIndex === 0 ? "h1" : "h2";
 
           return (
@@ -688,9 +590,7 @@ export function ScrollScrub({
                   {scene.kicker ? (
                     <p className="scroll-scrub__kicker">{scene.kicker}</p>
                   ) : null}
-                  <Heading className="scroll-scrub__title">
-                    {scene.title}
-                  </Heading>
+                  <Heading className="scroll-scrub__title">{scene.title}</Heading>
                   <p className="scroll-scrub__body">{scene.body}</p>
                   {scene.tags?.length ? (
                     <ul className="scroll-scrub__tags">
