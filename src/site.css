@@ -92,3 +92,17 @@ body,
   margin: 0;
   padding: 0;
 }
+
+/* Quote delivery popup + visible language switch */
+.lang{padding:4px;background:#090b0dcc;border:1px solid #ffffff2b;border-radius:4px;backdrop-filter:blur(10px)}
+.lang a{min-width:34px;text-align:center;padding:8px 9px!important;color:#9da5aa!important;font-weight:700;font-size:10px!important}
+.lang a.on{background:var(--nt-ivory);color:#0b0d0f!important}
+.lang i{color:#d4c7a7!important}
+.fields textarea{width:100%;display:block;margin-top:7px;padding:15px 0;background:transparent;color:var(--w);border:0;border-bottom:1px solid #48535a;outline:0;resize:vertical;font:14px Arial,Helvetica,sans-serif}
+.fieldWide{grid-column:1/-1}.hp{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;opacity:0!important}
+.sendModal{position:fixed;z-index:200;inset:0;background:#050607d9;backdrop-filter:blur(12px);display:grid;place-items:center;padding:22px}
+.sendCard{position:relative;width:min(620px,100%);background:#111519;border:1px solid #394147;padding:38px;color:var(--w)}
+.sendCard h3{font-family:Georgia,'Times New Roman',serif;font-size:clamp(28px,4vw,42px);line-height:1.05;margin:0 40px 14px 0}.sendCard>p:not(.eye):not(.sendError){color:var(--m);line-height:1.55}
+.sendClose{position:absolute;right:18px;top:14px;border:0;background:transparent;color:#fff;font-size:30px;cursor:pointer}
+.sendChoices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:28px}.sendChoices button{min-height:112px;text-align:left;padding:20px;border:1px solid #3a444a;background:#0b0d0f;color:#fff;cursor:pointer}.sendChoices button:hover{border-color:var(--nt-champagne)}.sendChoices button:disabled{opacity:.7;cursor:default}.sendChoices b,.sendChoices span{display:block}.sendChoices b{font-size:12px;letter-spacing:.12em;margin-bottom:10px}.sendChoices span{color:var(--m);font-size:12px;line-height:1.4}.sendError{color:#f0b5b5!important;margin:18px 0 0;font-size:12px}
+@media(max-width:800px){.brand span{font-size:11px}.navRight{margin-left:auto}.lang{gap:2px}.lang a{min-width:31px;padding:8px 7px!important;font-size:10px!important}.fields textarea{font-size:16px}.sendCard{padding:30px 22px}.sendChoices{grid-template-columns:1fr}.sendChoices button{min-height:94px}}
