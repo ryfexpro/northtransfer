@@ -234,7 +234,7 @@ export function ScrollScrub({
       segment.loading = false;
       segment.ready = false;
       segment.failed = false;
-      segment.current = segment.target;
+      segment.current += (segment.target - segment.current) * 0.2;
       delete segment.layer.dataset.videoPainted;
       delete segment.layer.dataset.videoFailed;
     };
@@ -357,7 +357,7 @@ export function ScrollScrub({
 
         // Finish the clip before the hero section ends. This keeps the hero at
         // 100dvh while allowing the final video frame to be visible briefly.
-        const local = clamp((y - segment.start) / (length * 0.82));
+        const local = clamp((y - segment.start) / length);
 
         segment.target = segment.linger
           ? lingerEase(local, segment.linger)
@@ -406,7 +406,7 @@ export function ScrollScrub({
         if (!video || !segment.ready || video.seeking) continue;
         if (!segment.visible && Math.abs(segment.current - segment.target) < 0.002) continue;
 
-        segment.current = segment.target;
+        segment.current += (segment.target - segment.current) * 0.2;
         const targetTime =
           clamp(segment.current, 0, 0.999) * (video.duration || 1);
         const epsilon = isMobile() ? 0.02 : 0.008;
