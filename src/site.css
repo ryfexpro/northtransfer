@@ -30,3 +30,24 @@
 .brand b:before{content:"N";position:absolute;left:4px;top:0;font:34px/42px Georgia,'Times New Roman',serif;color:var(--nt-ivory)}
 .brand b:after{content:"T";position:absolute;right:2px;top:7px;font:25px/35px Georgia,'Times New Roman',serif;color:var(--nt-champagne)}
 @media(max-width:800px){.brand b{width:36px;height:36px}.brand b:before{font-size:29px;line-height:36px}.brand b:after{font-size:21px;line-height:30px}}
+/* Prevent horizontal page drift without touching ScrollScrub */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.tg {
+  width: 100%;
+  max-width: 100%;
+}
+
+img,
+video {
+  max-width: 100%;
+}
