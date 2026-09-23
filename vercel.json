@@ -1,1 +1,1 @@
-{"rewrites":[{"source":"/((?!assets/|robots.txt|sitemap.xml).*)","destination":"/index.html"}]}
+{"rewrites":[{"source":"/((?!api/|assets/|robots.txt|sitemap.xml).*)","destination":"/index.html"}]}
