@@ -1,3 +1,0 @@
-import type { ScrollScrubScene, ScrollScrubTheme } from "./components/ScrollScrub";
-export const scrollScrubTheme: ScrollScrubTheme={accent:"#D8DDE2",background:"#0B0D0F",ink:"#F4F7F8",muted:"#A9B2B8"};
-export const scrollScrubScenes: ScrollScrubScene[]=[{id:"garda",label:"Lake Garda",kicker:"PRIVATE CHAUFFEUR · NORTHERN ITALY",title:"YOUR JOURNEY BEGINS HERE",body:"Premium airport transfers and private chauffeur service across Northern Italy · Lake Garda, Verona, Milan, Venice, the Dolomites and beyond.",tags:["NCC SERVICE","MERCEDES VEHICLES","PRIVATE TRANSFERS"],scroll:5.2,linger:.18,clip:"/assets/world/garda.mp4",poster:"/assets/world/garda-poster.jpg",mobileClip:"/assets/world/garda-mobile.mp4",mobilePoster:"/assets/world/garda-mobile-poster.jpg"}];
