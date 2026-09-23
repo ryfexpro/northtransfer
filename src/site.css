@@ -31,21 +31,25 @@
 .brand b:after{content:"T";position:absolute;right:2px;top:7px;font:25px/35px Georgia,'Times New Roman',serif;color:var(--nt-champagne)}
 @media(max-width:800px){.brand b{width:36px;height:36px}.brand b:before{font-size:29px;line-height:36px}.brand b:after{font-size:21px;line-height:30px}}
 /* Prevent horizontal page drift without touching ScrollScrub */
-/* MOBILE WIDTH FIX — do not touch ScrollScrub */
+/* SAFE MOBILE WIDTH FIX — keeps sticky hero working */
+
+html {
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
 @media (max-width: 800px) {
-  html,
-  body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-  }
 
   .tg {
     width: 100%;
     max-width: 100%;
-    overflow-x: hidden;
+    /* IMPORTANT: no overflow here */
   }
 
   .section,
@@ -57,27 +61,14 @@
   .trust,
   .airports,
   .garda,
-  .socialSection,
   .news {
     width: 100%;
     max-width: 100%;
   }
 
-  h1,
-  h2,
-  h3,
-  p {
-    max-width: 100%;
-    overflow-wrap: break-word;
-  }
-
   .final h2 {
     font-size: clamp(42px, 13vw, 68px);
     overflow-wrap: anywhere;
-  }
-
-  .final div {
-    width: 100%;
   }
 
   .mobile {
