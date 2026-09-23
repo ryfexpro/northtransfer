@@ -15,7 +15,7 @@ export const scrollScrubScenes: ScrollScrubScene[] = [
     title: "YOUR JOURNEY BEGINS HERE",
     body: "Premium airport transfers and private chauffeur service across Northern Italy · Lake Garda, Verona, Milan, Venice, the Dolomites and beyond.",
     tags: ["NCC SERVICE", "MERCEDES VEHICLES", "PRIVATE TRANSFERS"],
-    scroll: 1.65,
+    scroll: 1,
     linger: 0.08,
     clip: "/assets/world/garda.mp4",
     poster: "/assets/world/garda-poster.jpg",
