@@ -406,7 +406,7 @@ export function ScrollScrub({
         if (!video || !segment.ready || video.seeking) continue;
         if (!segment.visible && Math.abs(segment.current - segment.target) < 0.002) continue;
 
-        segment.current += (segment.target - segment.current) * 0.2;
+        segment.current = segment.target;
         const targetTime =
           clamp(segment.current, 0, 0.999) * (video.duration || 1);
         const epsilon = isMobile() ? 0.02 : 0.008;
