@@ -1,4 +1,4 @@
-/* Scroll scrub React/TanStack reference implementation. */
+import React from "react";/* Scroll scrub React/TanStack reference implementation. */
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
